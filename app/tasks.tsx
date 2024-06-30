@@ -20,7 +20,7 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import useIsKeyboardShown from "@utils/useIsKeyboardShown";
-import TaskItem from "components/tasks/TaskItem";
+import TaskItem, { RefMethods } from "components/tasks/TaskItem";
 import Task from "@models/task";
 import { useRouter } from "expo-router";
 import { Swipeable } from "react-native-gesture-handler";
@@ -64,10 +64,10 @@ const App = () => {
   }, [tasks]);
 
   const handlePress = (item: Task) => {
-    router.navigate({
-      pathname: "taskEdit",
-      params: { id: item.id },
-    });
+    const ref = itemRefs.current[item.id];
+    if (ref) {
+      ref.expand();
+    }
   };
 
   const handlePressCompleted = (item: Task, completed: boolean) => {
@@ -112,7 +112,7 @@ const App = () => {
     );
   };
 
-  const swipeableRefs = useRef({} as { [key: number]: Swipeable });
+  const itemRefs = useRef({} as { [key: number]: RefMethods });
   const currentSwipeable = useRef<Swipeable | null>(null);
   const currentSwipeableDirection = useRef<"left" | "right" | null>(null);
   const handleSwipeableOpen = (
@@ -240,7 +240,7 @@ const App = () => {
               key={task.id}
               ref={(ref) => {
                 if (ref) {
-                  swipeableRefs.current[task.id] = ref;
+                  itemRefs.current[task.id] = ref;
                 }
               }}
               style={{
@@ -292,7 +292,7 @@ const App = () => {
                 <TaskItem
                   ref={(ref) => {
                     if (ref) {
-                      swipeableRefs.current[task.id] = ref;
+                      itemRefs.current[task.id] = ref;
                     }
                   }}
                   style={{

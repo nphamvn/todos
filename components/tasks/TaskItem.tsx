@@ -37,7 +37,13 @@ type TaskItemProps = {
   ) => void;
 };
 
-const TaskItem = forwardRef<Swipeable, TaskItemProps>((props, ref) => {
+export type RefMethods = {
+  closeSwipeable: () => void;
+  expand: () => void;
+  collapse: () => void;
+};
+
+const TaskItem = forwardRef<RefMethods, TaskItemProps>((props, ref) => {
   const {
     task: task,
     onPress,
@@ -80,8 +86,24 @@ const TaskItem = forwardRef<Swipeable, TaskItemProps>((props, ref) => {
     });
   };
 
+  const expand = () => {
+    console.log("expand");
+  };
+
+  const collapse = () => {};
+
+  const closeSwipeable = () => {
+    innerRef?.current?.close();
+  };
+
   const innerRef = useRef<Swipeable>(null);
-  useImperativeHandle(ref, () => innerRef.current!);
+  useImperativeHandle(ref, () => {
+    return {
+      closeSwipeable,
+      expand,
+      collapse,
+    };
+  });
   const renderLefttActions = (
     _progress: RNAnimated.AnimatedInterpolation<number>,
     dragX: RNAnimated.AnimatedInterpolation<number>
@@ -93,36 +115,15 @@ const TaskItem = forwardRef<Swipeable, TaskItemProps>((props, ref) => {
     });
 
     return (
-      // <Pressable
-      //   style={{
-      //     backgroundColor: "blue",
-      //     justifyContent: "center",
-      //     alignItems: "center",
-      //     paddingHorizontal: 20,
-      //   }}
-      //   onPress={() => {
-      //     innerRef?.current?.close();
-      //   }}
-      // >
-      //   <MaterialIcons name="delete" size={24} color="white" />
-      // </Pressable>
-      <RectButton
-        style={styles.leftAction}
-        onPress={() => {
-          innerRef?.current?.close();
+      <Text
+        style={{
+          flex: 1,
+          backgroundColor: "#497AFC",
+          color: "white",
         }}
       >
-        <RNAnimated.Text
-          style={[
-            styles.actionText,
-            {
-              transform: [{ translateX: trans }],
-            },
-          ]}
-        >
-          Archive
-        </RNAnimated.Text>
-      </RectButton>
+        Debug
+      </Text>
     );
   };
 
