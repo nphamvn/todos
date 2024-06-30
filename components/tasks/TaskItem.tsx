@@ -1,116 +1,207 @@
 import Task from "models/task";
-import { memo, useEffect, useRef } from "react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import {
   View,
   Text,
   TouchableWithoutFeedback,
-  TouchableOpacity,
-  Animated,
+  StyleProp,
+  ViewStyle,
+  Pressable,
+  StyleSheet,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Swipeable } from "react-native-gesture-handler";
+import { Swipeable, RectButton } from "react-native-gesture-handler";
 import FixedTouchableHighlight from "@components/FixedTouchableHighlight";
+import * as Haptics from "expo-haptics";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  runOnJS,
+} from "react-native-reanimated";
 
-export function TaskItem({
-  task,
-  onPress,
-  onCompletedPress,
-  setCurrentSwipeable,
-  closeSwipeable,
-}: {
+import { Animated as RNAnimated } from "react-native";
+
+type TaskItemProps = {
   task: Task;
-  onPress: (task: Task) => void;
-  onCompletedPress: (task: Task, completed: boolean) => void;
-  setCurrentSwipeable: (swipeable: Swipeable | null) => void;
-  closeSwipeable: () => void;
-}) {
-  const swipeableRef = useRef<Swipeable>(null);
-  useEffect(() => {
-    if (setCurrentSwipeable) {
-      setCurrentSwipeable(swipeableRef.current);
-    }
-  }, [setCurrentSwipeable]);
+  onPress: () => void;
+  onPressCompleted: (completed: boolean) => void;
+  onPressDelete: () => void;
+  style?: StyleProp<ViewStyle> | undefined;
+  contentContainerStyle?: StyleProp<ViewStyle> | undefined;
+  onSwipeableOpenStartDrag?: (direction: "left" | "right") => void;
+  onSwipeableOpen?: (direction: "left" | "right", swipeable: Swipeable) => void;
+  onSwipeableClose?: (
+    direction: "left" | "right",
+    swipeable: Swipeable
+  ) => void;
+};
 
-  const handleItemPress = () => {
-    closeSwipeable();
-    onPress(task);
+const TaskItem = forwardRef<Swipeable, TaskItemProps>((props, ref) => {
+  const {
+    task: task,
+    onPress,
+    onPressCompleted,
+    onPressDelete,
+    onSwipeableOpenStartDrag,
+    onSwipeableOpen,
+    onSwipeableClose,
+    ...rest
+  } = props;
+
+  const [innerChecked, setInnerChecked] = useState(task.completed);
+  const toggleScale = useSharedValue(1);
+  const toggleStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: toggleScale.value }],
+    };
+  });
+
+  const handlePressCompleted = () => {
+    Haptics.selectionAsync().then(() => {
+      const currentChecked = innerChecked;
+      setInnerChecked(!innerChecked);
+      if (currentChecked === false) {
+        toggleScale.value = withSpring(1.3, undefined, (isFinished) => {
+          if (isFinished) {
+            toggleScale.value = withSpring(1, undefined, (isFinished) => {
+              if (isFinished) {
+                runOnJS(onPressCompleted)(true);
+                runOnJS(Haptics.impactAsync)(
+                  Haptics.ImpactFeedbackStyle.Medium
+                );
+              }
+            });
+          }
+        });
+      } else {
+        onPressCompleted(false);
+      }
+    });
   };
 
-  const renderRightActions = (
-    progressAnimatedValue: Animated.AnimatedInterpolation<number>,
-    dragX: Animated.AnimatedInterpolation<number>
+  const innerRef = useRef<Swipeable>(null);
+  useImperativeHandle(ref, () => innerRef.current!);
+  const renderLefttActions = (
+    _progress: RNAnimated.AnimatedInterpolation<number>,
+    dragX: RNAnimated.AnimatedInterpolation<number>
   ) => {
     const trans = dragX.interpolate({
-      inputRange: [-100, 0],
-      outputRange: [100, 0],
+      inputRange: [0, 50, 100, 101],
+      outputRange: [-20, 0, 0, 1],
+      extrapolate: "clamp",
     });
 
     return (
-      <Animated.View style={{ transform: [{ translateX: trans }] }}>
-        <TouchableOpacity
-          style={{
-            backgroundColor: "red",
-            justifyContent: "center",
-            alignItems: "center",
-            width: 75,
-            height: "100%",
-          }}
-          onPress={() => {
-            closeSwipeable();
-            onPress(task);
-          }}
+      // <Pressable
+      //   style={{
+      //     backgroundColor: "blue",
+      //     justifyContent: "center",
+      //     alignItems: "center",
+      //     paddingHorizontal: 20,
+      //   }}
+      //   onPress={() => {
+      //     innerRef?.current?.close();
+      //   }}
+      // >
+      //   <MaterialIcons name="delete" size={24} color="white" />
+      // </Pressable>
+      <RectButton
+        style={styles.leftAction}
+        onPress={() => {
+          innerRef?.current?.close();
+        }}
+      >
+        <RNAnimated.Text
+          style={[
+            styles.actionText,
+            {
+              transform: [{ translateX: trans }],
+            },
+          ]}
         >
-          <Text style={{ color: "#FFFFFF", fontSize: 18 }}>
-            {task.completed ? "Undo" : "Delete"}
-          </Text>
-        </TouchableOpacity>
-      </Animated.View>
+          Archive
+        </RNAnimated.Text>
+      </RectButton>
     );
+  };
+
+  const renderRightActions = () => {
+    return (
+      <Pressable
+        style={{
+          backgroundColor: "red",
+          justifyContent: "center",
+          alignItems: "center",
+          paddingHorizontal: 20,
+        }}
+        onPress={() => {
+          innerRef?.current?.close();
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onPressDelete();
+        }}
+      >
+        <MaterialIcons name="delete" size={24} color="white" />
+      </Pressable>
+    );
+  };
+
+  const handleItemPress = () => {
+    onPress();
   };
 
   return (
     <Swipeable
-      ref={swipeableRef}
+      ref={innerRef}
       friction={2}
       rightThreshold={40}
+      leftThreshold={40}
+      renderLeftActions={renderLefttActions}
       renderRightActions={renderRightActions}
-      onSwipeableOpen={() => {
-        setCurrentSwipeable(swipeableRef.current);
+      onSwipeableOpenStartDrag={(direction) => {
+        if (onSwipeableOpenStartDrag) {
+          onSwipeableOpenStartDrag(direction);
+        }
       }}
+      onSwipeableOpen={onSwipeableOpen}
+      onSwipeableClose={(direction, swipeable) => {
+        if (onSwipeableClose) {
+          onSwipeableClose(direction, swipeable);
+        }
+      }}
+      containerStyle={[
+        {
+          overflow: "hidden",
+        },
+        rest.style,
+      ]}
     >
-      <FixedTouchableHighlight
-        underlayColor={"#f0f0f0"}
-        style={{
-          margin: 4,
-        }}
-        onPress={handleItemPress}
-      >
+      <FixedTouchableHighlight underlayColor={"gray"} onPress={handleItemPress}>
         <View
-          style={{
-            backgroundColor: "white",
-            padding: 10,
-            flexDirection: "row",
-            alignItems: "center",
-          }}
+          style={[
+            {
+              backgroundColor: "white",
+              padding: 10,
+              flexDirection: "row",
+              alignItems: "center",
+            },
+            rest.contentContainerStyle,
+          ]}
         >
-          <TouchableWithoutFeedback
-            onPress={() => {
-              onCompletedPress(task, !task.completed);
-            }}
-          >
-            <View>
+          <TouchableWithoutFeedback onPress={handlePressCompleted}>
+            <Animated.View style={toggleStyle}>
               <MaterialIcons
-                name={task.completed ? "check-circle" : "check-circle-outline"}
-                size={24}
-                color="#333"
+                name={innerChecked ? "check-circle" : "radio-button-unchecked"}
+                size={28}
+                color="#666"
               />
-            </View>
+            </Animated.View>
           </TouchableWithoutFeedback>
           <Text
             style={{
               marginLeft: 4,
               color: "#333",
-              textDecorationLine: task.completed ? "line-through" : "none",
+              textDecorationLine: innerChecked ? "line-through" : "none",
             }}
           >
             {task.title}
@@ -119,6 +210,24 @@ export function TaskItem({
       </FixedTouchableHighlight>
     </Swipeable>
   );
-}
+});
+const styles = StyleSheet.create({
+  leftAction: {
+    //flex: 1,
+    backgroundColor: "#497AFC",
+    justifyContent: "center",
+  },
+  actionText: {
+    color: "white",
+    fontSize: 16,
+    backgroundColor: "transparent",
+    padding: 10,
+  },
+  rightAction: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+  },
+});
 
-export default memo(TaskItem); // 👈 memoize the component
+export default TaskItem; // 👈 memoize the component
