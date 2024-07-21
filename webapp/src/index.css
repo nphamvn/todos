@@ -1,3 +1,8 @@
 @tailwind base;
+@layer base {
+    html {
+        @apply text-slate-800;
+    }
+}
 @tailwind components;
 @tailwind utilities;

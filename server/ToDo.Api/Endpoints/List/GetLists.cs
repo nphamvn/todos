@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using ToDo.Api.Extensions;
 using ToDo.Domain;
 
 namespace ToDo.Api.Endpoints.List;
@@ -10,15 +11,15 @@ public static partial class MapEndpointExtensions
     {
         endpoints.MapGet("lists", async (ClaimsPrincipal claimsPrincipal, AppDbContext dbContext) =>
         {
-            var userId = claimsPrincipal.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            var userId = claimsPrincipal.GetUserId();
             var lists = await dbContext.Lists.Where(l => l.UserId == userId).Include(list => list.Tasks).ToListAsync();
             return lists.Select(l => new
             {
-                Id = l.Id,
-                Name = l.Name,
+                l.Id,
+                l.Name,
                 TaskCount = l.Tasks.Count,
-                CreatedAt = l.CreatedAt,
-                ModifiedAt = l.ModifiedAt
+                l.CreatedAt,
+                l.ModifiedAt
             }).ToList();
         });
     }

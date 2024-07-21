@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using ToDo.Api.Extensions;
 using ToDo.Domain;
 using ListEntity = ToDo.Domain.Entities.List;
 
@@ -12,7 +13,7 @@ public static partial class MapEndpointExtensions
         endpoints.MapPost("lists",
             async (ClaimsPrincipal claimsPrincipal, AppDbContext dbContext, PostListRequest req) =>
             {
-                var userId = claimsPrincipal.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value;
+                var userId = claimsPrincipal.GetUserId();
                 var list = new ListEntity
                 {
                     UserId = userId,
@@ -24,9 +25,9 @@ public static partial class MapEndpointExtensions
                 await dbContext.SaveChangesAsync();
                 return new
                 {
-                    Id = list.Id,
-                    Name = list.Name,
-                    CreatedAt = list.CreatedAt
+                    list.Id,
+                    list.Name,
+                    list.CreatedAt
                 };
             });
     }

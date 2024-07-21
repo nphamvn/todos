@@ -7,4 +7,6 @@ public class Task : BaseEntity
     public required string Id { get; set; }
 
     public required string Name { get; set; }
+
+    public bool Completed { get; set; }
 }

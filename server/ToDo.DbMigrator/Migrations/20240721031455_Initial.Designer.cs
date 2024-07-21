@@ -12,7 +12,7 @@ using ToDo.Domain;
 namespace ToDo.DbMigrator.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240720141646_Initial")]
+    [Migration("20240721031455_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -53,6 +53,9 @@ namespace ToDo.DbMigrator.Migrations
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
+
+                    b.Property<bool>("Completed")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");

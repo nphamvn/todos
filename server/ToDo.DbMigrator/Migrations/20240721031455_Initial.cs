@@ -33,6 +33,7 @@ namespace ToDo.DbMigrator.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     ListId = table.Column<string>(type: "text", nullable: false),
                     Name = table.Column<string>(type: "text", nullable: false),
+                    Completed = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
