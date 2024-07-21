@@ -1,1 +1,29 @@
+on:
+  push: 
+    branches: 
+      - main
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{github.repository}}-api
+
+jobs:
+  push-image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action
+        with:
+          registry: ${{env.REGISTRY}}
+          username: ${{github.actor}}
+          password: ${{secrets.CR_PAT}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action
+        with:
+          context: server
+          file: server/ToDo.Api/Dockerfile
+          push: true
