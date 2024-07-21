@@ -4,12 +4,12 @@ WORKDIR /source
 RUN dotnet tool install --global dotnet-ef
 ENV PATH="${PATH}:/root/.dotnet/tools"
 
-COPY Todo.Domain/ToDo.Domain.csproj Todo.Domain/
+COPY ToDo.Domain/ToDo.Domain.csproj ToDo.Domain/
 COPY ToDo.DbMigrator/ToDo.DbMigrator.csproj ToDo.DbMigrator/
 
 RUN dotnet restore ToDo.DbMigrator/ToDo.DbMigrator.csproj
 
-COPY Todo.Domain/ Todo.Domain/
+COPY ToDo.Domain/ ToDo.Domain/
 COPY ToDo.DbMigrator/ ToDo.DbMigrator/
 
 RUN dotnet ef migrations bundle -p ToDo.DbMigrator/ToDo.DbMigrator.csproj -o /out/efbundle -v

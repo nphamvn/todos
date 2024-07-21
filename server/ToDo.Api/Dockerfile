@@ -7,6 +7,7 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["ToDo.Domain/ToDo.Domain.csproj", "ToDo.Domain/"]
 COPY ["ToDo.Api/ToDo.Api.csproj", "ToDo.Api/"]
 RUN dotnet restore "ToDo.Api/ToDo.Api.csproj"
 COPY . .
