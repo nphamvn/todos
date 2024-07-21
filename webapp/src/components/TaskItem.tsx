@@ -21,9 +21,7 @@ type TaskItemRef = {
 };
 
 const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(function TaskItem(
-  { task, onChange, onMenuClick }: TaskItemProps,
-  ref
-) {
+  { task, onChange, onMenuClick }: TaskItemProps) {
   const { register, watch, trigger } = useForm<TaskInputs>({
     defaultValues: {
       name: task.name,
