@@ -4,3 +4,9 @@
     build:
       context: .
       dockerfile: ToDo.Api/Dockerfile
+  
+  todo.db-migrator:
+    image: todo.db-migrator
+    build:
+      context: .
+      dockerfile: ToDo.DbMigrator/Dockerfile
