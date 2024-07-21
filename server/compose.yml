@@ -10,3 +10,5 @@
     build:
       context: .
       dockerfile: ToDo.DbMigrator/Dockerfile
+    depends_on:
+      - todo.db
