@@ -4,11 +4,11 @@
     build:
       context: .
       dockerfile: ToDo.Api/Dockerfile
+    ports:
+      - "5138:8080"
   
   todo.db-migrator:
     image: todo.db-migrator
     build:
       context: .
       dockerfile: ToDo.DbMigrator/Dockerfile
-    depends_on:
-      - todo.db

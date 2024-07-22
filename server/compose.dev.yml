@@ -5,6 +5,14 @@
       - db-data:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=postgres
+        
+  todo.db-migrator:
+    image: todo.db-migrator
+    build:
+      context: .
+      dockerfile: ToDo.DbMigrator/Dockerfile
+    depends_on:
+      - todo.db
 
 volumes:
   db-data:
