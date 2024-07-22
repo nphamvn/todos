@@ -5,10 +5,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import Header from "./Header";
 import Task from "../models/Task";
-import TaskItem from "./TaskItem";
+import TaskItem, { TaskItemRef } from "./TaskItem";
 import useOutsideClick from "../hooks/useOutsideClick";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { EllipsisHorizontalIcon } from "@heroicons/react/24/solid";
+import useEffectOnNextRender from "../hooks/useEffectOnNextRender ";
 
 interface List {
   id: string;
@@ -95,7 +96,6 @@ export default function Home() {
 
   const onTaskChange = useCallback(
     (task: Task) => {
-      console.log("listId", listId);
       if (task.id === newTaskId.current) {
         // create new task
         (async () => {
@@ -220,6 +220,13 @@ export default function Home() {
   };
   //#endregion
 
+  const taskItemRefs = useRef<Record<string, TaskItemRef | null>>({});
+  const focusOnNewTask = useEffectOnNextRender(() => { 
+    if(newTaskId.current) {
+      taskItemRefs.current[newTaskId.current]?.focustNameInput();
+    }
+  });
+
   return (
     <div className="h-screen border-gray-100 border w-[80%] mx-auto flex-col flex">
       <Header />
@@ -291,7 +298,7 @@ export default function Home() {
           {listMenuVisible && currentList.current && (
             <div
               ref={listMenuRef}
-              className="absolute w-48 border flex flex-col bg-white p-2 rounded-md shadow-md shadow-gray-200"
+              className="absolute w-48 border flex flex-col bg-white p-2 rounded-md shadow-md shadow-gray-200 z-10"
               style={{
                 top: currentList.current.top,
                 left: currentList.current.left + 4,
@@ -310,7 +317,7 @@ export default function Home() {
         <div className="border flex-1">
           <div className="flex justify-between border-b-[1px] px-2 py-1">
             <h1 className="font-semibold">Tasks</h1>
-            <button
+            { listId && <button
               onClick={() => {
                 const newTask = {
                   id: uuidv4(),
@@ -319,17 +326,20 @@ export default function Home() {
                 };
                 setTasks([newTask, ...tasks]);
                 newTaskId.current = newTask.id;
+                focusOnNewTask();
               }}
-              className="text-blue-500 hover:underline disabled:opacity-50"
-              disabled={!listId}
+              className="text-blue-500 hover:underline"
             >
               New
-            </button>
+            </button>}
           </div>
           <div className="">
             {tasks.map((task) => (
               <TaskItem
                 key={task.id}
+                ref={(ref) => {
+                  taskItemRefs.current[task.id] = ref;
+                }}
                 task={task}
                 onChange={onTaskChange}
                 onMenuClick={onTaskMenuClick}
@@ -338,7 +348,7 @@ export default function Home() {
             {taskMenuVisible && currentTask.current && (
               <div
                 ref={taskMenuRef}
-                className="absolute w-48 border flex flex-col bg-white p-2 rounded-md shadow-md shadow-gray-200"
+                className="absolute w-48 border flex flex-col bg-white p-2 rounded-md shadow-md shadow-gray-200 z-10"
                 style={{
                   top: currentTask.current.top,
                   left: currentTask.current.left - 196,

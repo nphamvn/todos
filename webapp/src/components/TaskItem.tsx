@@ -1,4 +1,4 @@
-import { forwardRef, memo, useEffect, useRef } from "react";
+import { forwardRef, memo, useEffect, useImperativeHandle, useRef } from "react";
 import Task from "../models/Task";
 import { useForm } from "react-hook-form";
 import { EllipsisHorizontalIcon } from "@heroicons/react/24/solid";
@@ -14,15 +14,17 @@ type TaskItemProps = {
   onMenuClick: (task: Task, top: number, left: number) => void;
 };
 
-type TaskItemRef = {
-  task: Task;
-  onChange: (task: Task) => void;
-  onMenuClick: (task: Task) => void;
+export interface TaskItemRef {
+  focustNameInput: () => void;
 };
 
-const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(function TaskItem(
-  { task, onChange, onMenuClick }: TaskItemProps) {
-  const { register, watch, trigger } = useForm<TaskInputs>({
+const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(function TaskItem({
+  task,
+  onChange,
+  onMenuClick,
+}, ref) {
+
+  const { register, watch, trigger, handleSubmit, setFocus } = useForm<TaskInputs>({
     defaultValues: {
       name: task.name,
       completed: task.completed,
@@ -54,7 +56,22 @@ const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(function TaskItem(
     return () => subscription.unsubscribe();
   }, [watch]);
 
+  const onSubmitName = (data: TaskInputs) => { 
+    if (nameDebounceRef.current) {
+      clearTimeout(nameDebounceRef.current);
+    }
+    onChange({ ...task, ...data });
+  };
+
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  const focustNameInput = () => {
+    setFocus("name");
+  }
+  
+  useImperativeHandle(ref, () => ({
+    focustNameInput
+  }));
   return (
     <div className="flex px-2 py-1 group items-center">
       <button
@@ -70,8 +87,12 @@ const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(function TaskItem(
       >
         <EllipsisHorizontalIcon className="w-4 h-4" />
       </button>
-      <input type="checkbox" {...register("completed")} className="ms-2" />
-      <input type="text" {...register("name")} className="ms-2 flex-1 p-1" />
+      <form
+        onSubmit={handleSubmit(onSubmitName)}
+      >
+        <input type="checkbox" {...register("completed")} className="ms-2" />
+        <input type="text" {...register("name")} className="ms-2 flex-1 p-1" />
+      </form>
     </div>
   );
 });

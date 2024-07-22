@@ -35,7 +35,7 @@ export default function Header() {
         {dropdownVisible && (
           <div
             ref={dropdownRef}
-            className="absolute bg-white border w-42 right-0 shadow rounded shadow-neutral-200 p-2"
+            className="absolute bg-white border w-42 right-0  rounded shadow-neutral-200 p-2 z-10"
           >
             <div className="text-sm px-2">{user?.email}</div>
             <hr className="my-2" />
