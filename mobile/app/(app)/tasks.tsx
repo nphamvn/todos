@@ -22,7 +22,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import useIsKeyboardShown from "@utils/useIsKeyboardShown";
 import TaskItem, { RefMethods } from "components/tasks/TaskItem";
 import Task from "@models/task";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Swipeable } from "react-native-gesture-handler";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { HeaderBackButton } from "@react-navigation/elements";
@@ -31,6 +31,8 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { useAuth0 } from "react-native-auth0";
+import { v4 as uuidv4 } from "uuid";
 // Enable LayoutAnimation on Android
 if (
   Platform.OS === "android" &&
@@ -41,15 +43,29 @@ if (
 
 const App = () => {
   const router = useRouter();
+  const { getCredentials } = useAuth0();
   const { showActionSheetWithOptions } = useActionSheet();
-  const [tasks, setTasks] = useState<Task[]>(
-    Array.from({ length: 2 }).map((_, i) => ({
-      id: i,
-      title: `Task ${i} \nThis is a task description. `,
-      completed: false,
-      createdAt: new Date(),
-    }))
-  );
+  const { listId } = useLocalSearchParams();
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const token = (await getCredentials())?.accessToken;
+      const response = await fetch(
+        `http://raspberrypi.local:5138/lists/${listId}/tasks`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      setTasks(
+        data.map((t: any) => ({ ...t, createdAt: new Date(t.createdAt) }))
+      );
+    })();
+  }, []);
 
   const notCompletedTasks = useMemo(() => {
     return tasks
@@ -112,7 +128,7 @@ const App = () => {
     );
   };
 
-  const itemRefs = useRef({} as { [key: number]: RefMethods });
+  const itemRefs = useRef({} as { [key: string]: RefMethods });
   const currentSwipeable = useRef<Swipeable | null>(null);
   const currentSwipeableDirection = useRef<"left" | "right" | null>(null);
   const handleSwipeableOpen = (
@@ -259,23 +275,25 @@ const App = () => {
             />
           ))}
         </View>
-        <View
-          style={{
-            marginTop: 6,
-            marginBottom: 4,
-          }}
-        >
-          <Pressable
-            onPress={() => {
-              setShowCompleted(!showCompleted);
-              opacityAnim.value = withTiming(showCompleted ? 0 : 1, {
-                duration: 300,
-              });
+        {completedTasks.length > 0 && (
+          <View
+            style={{
+              marginTop: 6,
+              marginBottom: 4,
             }}
           >
-            <Text>Completed</Text>
-          </Pressable>
-        </View>
+            <Pressable
+              onPress={() => {
+                setShowCompleted(!showCompleted);
+                opacityAnim.value = withTiming(showCompleted ? 0 : 1, {
+                  duration: 300,
+                });
+              }}
+            >
+              <Text>Completed</Text>
+            </Pressable>
+          </View>
+        )}
         <Animated.View
           style={{
             opacity: opacityAnim,
@@ -364,21 +382,33 @@ const App = () => {
               value={task}
               onChangeText={setTask}
               blurOnSubmit={false}
-              onSubmitEditing={() => {
-                console.log("Submit Task");
+              onSubmitEditing={async () => {
                 LayoutAnimation.configureNext(
                   LayoutAnimation.Presets.easeInEaseOut
                 );
-                setTasks((tasks) => [
-                  ...tasks,
+                const newTask = {
+                  id: uuidv4(),
+                  name: task!,
+                  completed: false,
+                  createdAt: new Date(),
+                };
+                const token = (await getCredentials())?.accessToken;
+                const response = await fetch(
+                  `http://raspberrypi.local:5138/lists/${listId}/tasks`,
                   {
-                    id: tasks.length,
-                    title: task!,
-                    completed: false,
-                    createdAt: new Date(),
-                  },
-                ]);
-                setTask("");
+                    method: "POST",
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(newTask),
+                  }
+                );
+                console.log(response.status);
+                if (response.ok) {
+                  setTasks((tasks) => [newTask, ...tasks]);
+                  setTask("");
+                }
               }}
               placeholder="Add Task"
               style={{

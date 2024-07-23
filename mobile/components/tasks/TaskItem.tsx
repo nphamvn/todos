@@ -205,7 +205,7 @@ const TaskItem = forwardRef<RefMethods, TaskItemProps>((props, ref) => {
               textDecorationLine: innerChecked ? "line-through" : "none",
             }}
           >
-            {task.title}
+            {task.name}
           </Text>
         </View>
       </FixedTouchableHighlight>
