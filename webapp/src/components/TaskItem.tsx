@@ -72,11 +72,12 @@ const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(function TaskItem({
   useImperativeHandle(ref, () => ({
     focustNameInput
   }));
+
   return (
     <div className="flex px-2 py-1 group items-center">
       <button
         ref={menuButtonRef}
-        className="opacity-0 group-hover:opacity-100 px-2 h-4 hover:bg-gray-100 rounded-sm"
+        className="opacity-0 group-hover:opacity-100 px-2 h-4 hover:bg-neutral-100 rounded"
         onClick={() => {
           const rect = menuButtonRef.current?.getBoundingClientRect();
           if (!rect) {
@@ -89,9 +90,10 @@ const TaskItem = forwardRef<TaskItemRef, TaskItemProps>(function TaskItem({
       </button>
       <form
         onSubmit={handleSubmit(onSubmitName)}
+        className="flex items-center w-full"
       >
         <input type="checkbox" {...register("completed")} className="ms-2" />
-        <input type="text" {...register("name")} className="ms-2 flex-1 p-1" />
+        <input type="text" {...register("name")} className="ms-2 w-full p-1" />
       </form>
     </div>
   );

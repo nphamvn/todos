@@ -9,7 +9,7 @@ import TaskItem, { TaskItemRef } from "./TaskItem";
 import useOutsideClick from "../hooks/useOutsideClick";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { EllipsisHorizontalIcon } from "@heroicons/react/24/solid";
-import useEffectOnNextRender from "../hooks/useEffectOnNextRender ";
+import useEffectOnNextRender from "../hooks/useEffectOnNextRender";
 
 interface List {
   id: string;
@@ -128,6 +128,7 @@ export default function Home() {
           if (!response.ok) {
             throw new Error("Failed to update task");
           }
+          setTasks((tasks) => tasks.map((t) => (t.id === task.id ? task : t)));
         })();
       }
     },
