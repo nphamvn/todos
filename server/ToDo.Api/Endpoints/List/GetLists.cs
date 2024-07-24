@@ -12,7 +12,7 @@ public static partial class MapEndpointExtensions
         endpoints.MapGet("lists", async (ClaimsPrincipal claimsPrincipal, AppDbContext dbContext) =>
         {
             var userId = claimsPrincipal.GetUserId();
-            var lists = await dbContext.Lists.Where(l => l.UserId == userId).Include(list => list.Tasks).ToListAsync();
+            var lists = await dbContext.Lists.Include(list => list.Tasks).Where(l => l.UserId == userId).ToListAsync();
             return lists.Select(l => new
             {
                 l.Id,
