@@ -20,6 +20,13 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
+        name="saveList"
+        options={{
+          presentation: "modal",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
         name="tasks"
         options={{
           headerShown: false,

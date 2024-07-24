@@ -1,7 +1,6 @@
-import { useNavigation, useRouter } from "expo-router";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
-import { v4 as uuidv4 } from "uuid";
 
 import {
   View,
@@ -9,14 +8,14 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableHighlight,
-  Button,
   Image,
   Pressable,
   StyleSheet,
-  Alert,
+  RefreshControl,
 } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import appConfig from "appConfig";
 interface List {
   id: string;
   name: string;
@@ -26,37 +25,32 @@ export default function Screen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  const [refreshing, setRefreshing] = useState(false);
   const [lists, setLists] = useState<List[]>([]);
 
+  const fetchLists = async () => {
+    const { accessToken } = (await getCredentials())!;
+    const response = await fetch(`${appConfig.apiUrl}/lists`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const data = await response.json();
+    setLists(data);
+  };
+
   useEffect(() => {
-    (async () => {
-      const { accessToken } = (await getCredentials())!;
-      const response = await fetch("http://raspberrypi.local:5138/lists", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      const data = await response.json();
-      setLists(data);
-    })();
+    fetchLists();
   }, []);
 
   const handleAddListPress = async () => {
-    Alert.prompt("Add List", "", async (name) => {
-      const token = (await getCredentials())?.accessToken;
-      const reponse = await fetch("http://raspberrypi.local:5138/lists", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, id: uuidv4() }),
-      });
-      if (reponse.ok) {
-        const data = await reponse.json();
-        setLists((prev) => [...prev, data]);
-      }
-    });
+    router.navigate("saveList");
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchLists();
+    setRefreshing(false);
   };
 
   return (
@@ -88,7 +82,12 @@ export default function Screen() {
           <Text>{user?.name}</Text>
         </Pressable>
       </View>
-      <ScrollView contentInsetAdjustmentBehavior="automatic">
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {lists.map((list, i) => (
           <TouchableHighlight
             key={i}
