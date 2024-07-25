@@ -14,6 +14,13 @@ export default function Layout() {
   return (
     <Stack>
       <Stack.Screen
+        name="profile"
+        options={{
+          //headerShown: false,
+          presentation: "modal",
+        }}
+      />
+      <Stack.Screen
         name="index"
         options={{
           headerShown: false,

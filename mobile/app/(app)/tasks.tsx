@@ -33,6 +33,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useAuth0 } from "react-native-auth0";
 import { v4 as uuidv4 } from "uuid";
+import appConfig from "appConfig";
 // Enable LayoutAnimation on Android
 if (
   Platform.OS === "android" &&
@@ -52,7 +53,7 @@ const App = () => {
     (async () => {
       const token = (await getCredentials())?.accessToken;
       const response = await fetch(
-        `http://raspberrypi.local:5138/lists/${listId}/tasks`,
+        `${appConfig.apiUrl}/lists/${listId}/tasks`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -394,7 +395,7 @@ const App = () => {
                 };
                 const token = (await getCredentials())?.accessToken;
                 const response = await fetch(
-                  `http://raspberrypi.local:5138/lists/${listId}/tasks`,
+                  `${appConfig.apiUrl}/lists/${listId}/tasks`,
                   {
                     method: "POST",
                     headers: {

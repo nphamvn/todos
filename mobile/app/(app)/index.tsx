@@ -1,5 +1,5 @@
-import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import {
@@ -19,6 +19,7 @@ import appConfig from "appConfig";
 interface List {
   id: string;
   name: string;
+  taskCount: number;
 }
 export default function Screen() {
   const { getCredentials, user, clearSession } = useAuth0();
@@ -39,9 +40,11 @@ export default function Screen() {
     setLists(data);
   };
 
-  useEffect(() => {
-    fetchLists();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchLists();
+    }, [])
+  );
 
   const handleAddListPress = async () => {
     router.navigate("saveList");
@@ -53,32 +56,29 @@ export default function Screen() {
     setRefreshing(false);
   };
 
+  const handleListPress = (id: string) => {
+    router.navigate({
+      pathname: "tasks",
+      params: { listId: id },
+    });
+  };
+
+  const handleAvatarPress = () => {
+    router.navigate("profile");
+  };
+
   return (
     <SafeAreaView
-      style={{
-        backgroundColor: "white",
-        paddingTop: insets.top,
-        flex: 1,
-      }}
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top,
+        },
+      ]}
     >
-      <View>
-        <Pressable
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-          onPress={() => {
-            //clearSession();
-          }}
-        >
-          <Image
-            src={user?.picture}
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 15,
-            }}
-          />
+      <View style={styles.header}>
+        <Pressable style={styles.avatarContainer} onPress={handleAvatarPress}>
+          <Image src={user?.picture} style={styles.avatar} />
           <Text>{user?.name}</Text>
         </Pressable>
       </View>
@@ -92,19 +92,13 @@ export default function Screen() {
           <TouchableHighlight
             key={i}
             underlayColor={"#f0f0f0"}
-            style={{
-              padding: 20,
-            }}
-            onPress={() => {
-              router.navigate({
-                pathname: "tasks",
-                params: { listId: list.id },
-              });
-            }}
+            style={styles.listRow}
+            onPress={() => handleListPress(list.id)}
           >
-            <View>
+            <React.Fragment>
               <Text>{list.name}</Text>
-            </View>
+              <Text>{list.taskCount}</Text>
+            </React.Fragment>
           </TouchableHighlight>
         ))}
       </ScrollView>
@@ -116,6 +110,20 @@ export default function Screen() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    backgroundColor: "white",
+    flex: 1,
+  },
+  header: {},
+  avatarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+  },
   addButton: {
     padding: 10,
     backgroundColor: "rgb(99 102 241)",
@@ -123,5 +131,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 20,
     right: 20,
+  },
+  listRow: {
+    padding: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 });
