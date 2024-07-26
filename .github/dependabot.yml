@@ -11,7 +11,7 @@ updates:
       interval: "daily"
 
   - package-ecosystem: "nuget"
-    directory:
+    directories:
       - "server/ToDo.Api"
       - "server/ToDo.DbMigrator"
       - "server/ToDo.Domain"
