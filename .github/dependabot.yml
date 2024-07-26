@@ -11,14 +11,14 @@ updates:
       interval: "daily"
 
   - package-ecosystem: "nuget"
-    directory: 
-      "server/ToDo.Api"
-      "server/ToDo.DbMigrator"
-      "server/ToDo.Domain"
+    directory:
+      - "server/ToDo.Api"
+      - "server/ToDo.DbMigrator"
+      - "server/ToDo.Domain"
     schedule:
       interval: "daily"
 
   - package-ecosystem: "npm"
     directory: "webapp"
     schedule:
-      interval: "daily"      
+      interval: "daily"
