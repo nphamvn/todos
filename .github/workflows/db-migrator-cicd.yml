@@ -5,6 +5,7 @@ on:
     paths: 
       - server/ToDo.DbMigrator/**
       - server/ToDo.Domain/**
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
