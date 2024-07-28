@@ -30,7 +30,8 @@ export default function Layout() {
         name="saveList"
         options={{
           presentation: "modal",
-          headerShown: false,
+          //headerShown: false,
+          title: "Save List",
         }}
       />
       <Stack.Screen

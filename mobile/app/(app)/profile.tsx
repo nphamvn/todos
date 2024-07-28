@@ -1,4 +1,10 @@
-import { View, Text, ScrollView, TouchableHighlight } from "react-native";
+import {
+  Text,
+  ScrollView,
+  TouchableHighlight,
+  SafeAreaView,
+  StyleSheet,
+} from "react-native";
 import { useAuth0 } from "react-native-auth0";
 
 export default function Screen() {
@@ -9,13 +15,19 @@ export default function Screen() {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView style={styles.container}>
       <ScrollView>
         <Text>{user?.name}</Text>
       </ScrollView>
       <TouchableHighlight onPress={handleLogoutPress}>
         <Text>Logout</Text>
       </TouchableHighlight>
-    </View>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

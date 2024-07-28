@@ -1,5 +1,5 @@
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import {
@@ -22,7 +22,7 @@ interface List {
   taskCount: number;
 }
 export default function Screen() {
-  const { getCredentials, user, clearSession } = useAuth0();
+  const { getCredentials, user } = useAuth0();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 

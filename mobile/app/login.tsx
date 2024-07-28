@@ -1,4 +1,4 @@
-import { View, Text, Button } from "react-native";
+import { View, Text, Button, StyleSheet } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 
 export default function Screen() {
@@ -15,13 +15,17 @@ export default function Screen() {
   };
 
   return (
-    <View
-      style={{
-        paddingTop: 100,
-      }}
-    >
-      <Text>Welcome</Text>
+    <View style={styles.container}>
+      <Text>Welcome, please login to continue to use the app.</Text>
       <Button title="Login" onPress={onPress} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});

@@ -1,7 +1,14 @@
 import appConfig from "appConfig";
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet } from "react-native";
+import { Stack, useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  SafeAreaView,
+} from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { v4 as uuidv4 } from "uuid";
@@ -33,20 +40,23 @@ export default function Screen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Button title="Back" onPress={handleBackPress} />
-        <Text>Add List</Text>
-        <Button title="Save" onPress={handleSavePress} />
-      </View>
-      <View>
+    <React.Fragment>
+      <Stack.Screen
+        options={{
+          headerLeft: () => <Button title="Cancel" onPress={handleBackPress} />,
+          headerRight: () => <Button title="Save" onPress={handleSavePress} />,
+        }}
+      />
+      <SafeAreaView style={[styles.container, { paddingTop: insets.top }]}>
         <TextInput
           placeholder="List Name"
           value={name}
           onChangeText={setName}
+          autoFocus
+          style={styles.input}
         />
-      </View>
-    </View>
+      </SafeAreaView>
+    </React.Fragment>
   );
 }
 
@@ -54,6 +64,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor: "rgb(250 250 250)",
   },
   header: {
     flexDirection: "row",
@@ -62,9 +73,12 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "black",
-    padding: 8,
+    borderColor: "#ccc",
+    padding: 10,
     margin: 8,
+    backgroundColor: "#fff",
+    borderRadius: 4,
+    fontSize: 18,
   },
   button: {
     margin: 8,
